@@ -5,23 +5,32 @@ namespace OneTimePasswordBusinessLogic
 {
     public class AllInOneImplementation : IOneTimePasswordGenerator, IOneTimePasswordCommunicator, IOneTimePasswordRepository
     {
-        private readonly static IList<OneTimePassword> passwords = new List<OneTimePassword>();
+        private static readonly Dictionary<string, OneTimePassword> passwords = new Dictionary<string, OneTimePassword>();
 
         public Task<OneTimePassword> GenerateForUser(string userId, DateTime expirationDate)
         {
-            var newPassword = new OneTimePassword() { UserId = userId, ExpirationDate = expirationDate, Value = passwords.Count().ToString() };
+            Random random = new Random();
+            var randomNumber = random.Next(0, 1000000);
+
+            var newPassword = new OneTimePassword() { UserId = userId, ExpirationDate = expirationDate, Value = randomNumber.ToString("000000") };
             return Task.FromResult(newPassword);
         }
 
-        public Task<OneTimePassword?> GetValidPasswordForUserId(string userId)
+        public Task<OneTimePassword> GetValidPasswordForUserId(string userId)
         {
-            var password = passwords.Where(x => string.Equals(x.UserId, userId) && x.ExpirationDate > DateTime.UtcNow).OrderByDescending(x => x.ExpirationDate).FirstOrDefault();
-            return Task.FromResult(password);
+            if (!passwords.ContainsKey(userId)) return Task.FromResult(default(OneTimePassword));
+            var cached = passwords[userId];
+            if (DateTime.UtcNow >= cached.ExpirationDate)
+            {
+                passwords.Remove(userId);
+                return Task.FromResult(default(OneTimePassword));
+            }
+            return Task.FromResult(cached);
         }
 
         public Task Save(OneTimePassword oneTimePassword)
         {
-            passwords.Add(oneTimePassword);
+            passwords[oneTimePassword.UserId] = oneTimePassword;
             return Task.CompletedTask;
         }
 

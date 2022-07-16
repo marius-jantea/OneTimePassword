@@ -16,10 +16,9 @@ namespace OneTimePassword_WebApi.Controllers
         }
 
         [HttpGet("GetValidPassword")]
-        public async Task<OneTimePassword?> GetValidPasswordForUser(string userId)
+        public async Task<OneTimePasswordWithExpirationInSeconds?> GetValidPasswordForUser(string userId)
         {
-            var validPassword =  await oneTimePasswordApplication.GetValidPasswordForUser(userId);
-            return validPassword ?? new OneTimePassword{UserId = userId, Value = Guid.NewGuid().ToString(), ExpirationDate = DateTime.UtcNow};
+            return await oneTimePasswordApplication.GetPasswordWithExpirationForUser(userId);
         }
 
         [HttpPost("Generate")]

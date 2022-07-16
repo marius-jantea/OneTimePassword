@@ -15,7 +15,7 @@ namespace OneTimePasswordBusinessLogic_Tests
             var repositoryMock = new Mock<IOneTimePasswordRepository>();
             var communicatorMock = new Mock<IOneTimePasswordCommunicator>();
 
-            var userId = Guid.NewGuid();
+            var userId = Guid.NewGuid().ToString();
             var oneTimePasswordGenerated = new OneTimePassword
             {
                 UserId = userId,

@@ -30,9 +30,20 @@ namespace OneTimePasswordBusinessLogic
             return oneTimePasswordForUser != null && string.Equals(oneTimePasswordForUser.Value, value);
         }
 
-        public async Task<OneTimePassword?> GetValidPasswordForUser(string userId)
+        public async Task<OneTimePasswordWithExpirationInSeconds?> GetPasswordWithExpirationForUser(string userId)
         {
-            return await oneTimePasswordRepository.GetValidPasswordForUserId(userId);
+            var validPassword = await oneTimePasswordRepository.GetValidPasswordForUserId(userId);
+            if (validPassword == null)
+            {
+                return default(OneTimePasswordWithExpirationInSeconds);
+            }
+
+            return new OneTimePasswordWithExpirationInSeconds
+            {
+                Value = validPassword.Value,
+                ExpirationInSeconds =
+                validPassword.ExpirationDate.Subtract(DateTime.UtcNow).Seconds
+            };
         }
 
         private DateTime GetExpirationDate()

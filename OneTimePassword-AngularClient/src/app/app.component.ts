@@ -14,10 +14,7 @@ export class AppComponent {
 
   constructor(http: HttpClient) {
     this.httpClient = http;
-    this.user = new User("15", {
-      value: "hello",
-      validSeconds: 30
-    });
+    this.user = new User("1");
   }
 
   getOneTimePassword() {
@@ -27,31 +24,45 @@ export class AppComponent {
   title = 'OneTimePassword-Demo';
 
   submitted = false;
-  onSubmit() {
-    this.submitted = true;
+  async onSubmit() {
+    await this.generateOneTimePasswordForUser();
+    await this.updateValidOneTimePassword();
+  }
 
-
+  private async generateOneTimePasswordForUser() {
     const headers = { 'content-type': 'application/json' }
     const body = JSON.stringify(this.user.id);
-    this.httpClient.post(this.baseURL + 'OneTimePassword/Generate', body, { 'headers': headers }).subscribe(result => {
+    await this.httpClient.post(this.baseURL + 'OneTimePassword/Generate', body, { 'headers': headers }).subscribe(result => {
       console.log(result);
     }, error => console.error(error));
+  }
 
-
-    this.httpClient.get<OneTimePassword>(this.baseURL + 'OneTimePassword/GetValidPassword?userId=' + this.user.id).subscribe(result => {
-      this.user.oneTimePassword = result;
+  private async updateValidOneTimePassword() {
+    await this.httpClient.get<OneTimePassword>(this.baseURL + 'OneTimePassword/GetValidPassword?userId=' + this.user.id).subscribe(result => {
+      var expirationTime = new Date(Date.now());
+      expirationTime.setSeconds(expirationTime.getSeconds() + result.expirationInSeconds);
+      this.user.oneTimePassword = new UserOneTimePassword(result.value, expirationTime);
     }, error => console.error(error));
   }
 }
 
 interface OneTimePassword {
   value: string;
-  validSeconds: number;
+  expirationInSeconds: number;
 }
 
 export class User {
   constructor(
     public id: string,
-    public oneTimePassword: OneTimePassword
+    public oneTimePassword?: UserOneTimePassword
   ) { }
+}
+
+export class UserOneTimePassword {
+  public value: string;
+  public expirationTime: Date;
+  constructor(value: string, expirationTime: Date) {
+    this.value = value;
+    this.expirationTime = expirationTime;
+  }
 }
