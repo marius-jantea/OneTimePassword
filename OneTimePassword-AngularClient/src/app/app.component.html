@@ -1,0 +1,19 @@
+
+<div [hidden]="submitted">
+  <h1>One Time Password Form</h1>
+  <form (ngSubmit)="onSubmit()" #oneTimePasswordForm="ngForm">
+    <div class="form-group">
+      <label for="name">User Id</label>
+      <input type="text" class="form-control" id="userId"
+             required
+             [(ngModel)]="user.id" name="userId">
+
+    </div>
+    <button type="submit" class="btn btn-success">Submit</button>
+  </form>
+</div>
+
+<div *ngIf="user.oneTimePassword">
+  <div>{{user.oneTimePassword.value}}</div>
+  <div>{{user.oneTimePassword.validSeconds}}</div>
+</div>
