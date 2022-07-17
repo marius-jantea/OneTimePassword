@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, NgModule } from '@angular/core';
+import { OneTimePasswordService } from './services/onetimepassword.service';
 
 @Component({
   selector: 'app-root',
@@ -9,46 +10,24 @@ import { Component, NgModule } from '@angular/core';
 
 export class AppComponent {
   public user: User;
-  private httpClient: HttpClient;
-  private baseURL: string = "https://localhost:7000/";
 
-  constructor(http: HttpClient) {
-    this.httpClient = http;
+  constructor(private oneTimePasswordService: OneTimePasswordService) {
     this.user = new User("1");
   }
 
-  getOneTimePassword() {
-
-  }
-
-  title = 'OneTimePassword-Demo';
-
-  submitted = false;
   async onSubmit() {
-    await this.generateOneTimePasswordForUser();
-    await this.updateValidOneTimePassword();
-  }
-
-  private async generateOneTimePasswordForUser() {
-    const headers = { 'content-type': 'application/json' }
-    const body = JSON.stringify(this.user.id);
-    await this.httpClient.post(this.baseURL + 'OneTimePassword/Generate', body, { 'headers': headers }).subscribe(result => {
+    await this.oneTimePasswordService.generateOneTimePasswordForUser(this.user.id).then(result => {
       console.log(result);
     }, error => console.error(error));
-  }
 
-  private async updateValidOneTimePassword() {
-    await this.httpClient.get<OneTimePassword>(this.baseURL + 'OneTimePassword/GetValidPassword?userId=' + this.user.id).subscribe(result => {
-      var expirationTime = new Date(Date.now());
-      expirationTime.setSeconds(expirationTime.getSeconds() + result.expirationInSeconds);
-      this.user.oneTimePassword = new UserOneTimePassword(result.value, expirationTime);
-    }, error => console.error(error));
+    await this.oneTimePasswordService.getValidOneTimePassword(this.user.id).then(result => {
+      if (result) {
+        var expirationTime = new Date(Date.now());
+        expirationTime.setSeconds(expirationTime.getSeconds() + result.expirationInSeconds);
+        this.user.oneTimePassword = new UserOneTimePassword(result.value, expirationTime);
+      }
+    }, error => console.error(error));;
   }
-}
-
-interface OneTimePassword {
-  value: string;
-  expirationInSeconds: number;
 }
 
 export class User {
