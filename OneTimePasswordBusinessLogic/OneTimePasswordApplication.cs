@@ -5,12 +5,14 @@ namespace OneTimePasswordBusinessLogic
 {
     public class OneTimePasswordApplication
     {
+        private readonly IOneTimePasswordConfiguration configuration;
         private readonly IOneTimePasswordGenerator oneTimePasswordGenerator;
         private readonly IOneTimePasswordRepository oneTimePasswordRepository;
         private readonly IOneTimePasswordCommunicator oneTimePasswordCommunicator;
 
-        public OneTimePasswordApplication(IOneTimePasswordGenerator oneTimePasswordGenerator, IOneTimePasswordRepository oneTimePasswordRepository, IOneTimePasswordCommunicator oneTimePasswordCommunicator)
+        public OneTimePasswordApplication(IOneTimePasswordConfiguration configuration, IOneTimePasswordGenerator oneTimePasswordGenerator, IOneTimePasswordRepository oneTimePasswordRepository, IOneTimePasswordCommunicator oneTimePasswordCommunicator)
         {
+            this.configuration = configuration;
             this.oneTimePasswordGenerator = oneTimePasswordGenerator;
             this.oneTimePasswordRepository = oneTimePasswordRepository;
             this.oneTimePasswordCommunicator = oneTimePasswordCommunicator;
@@ -48,7 +50,7 @@ namespace OneTimePasswordBusinessLogic
 
         private DateTime GetExpirationDate()
         {
-            return DateTime.UtcNow.AddSeconds(30);
+            return DateTime.UtcNow.AddSeconds(configuration.MaximumNumberOfSecondsForValidity);
         }
     }
 }

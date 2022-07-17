@@ -14,6 +14,7 @@ namespace OneTimePasswordBusinessLogic_Tests
             var generatorMock = new Mock<IOneTimePasswordGenerator>();
             var repositoryMock = new Mock<IOneTimePasswordRepository>();
             var communicatorMock = new Mock<IOneTimePasswordCommunicator>();
+            var configurationMock = new Mock<IOneTimePasswordConfiguration>();
 
             var userId = Guid.NewGuid().ToString();
             var oneTimePasswordGenerated = new OneTimePassword
@@ -27,13 +28,13 @@ namespace OneTimePasswordBusinessLogic_Tests
                 .Returns(Task.FromResult(oneTimePasswordGenerated));
 
 
-            var oneTimePasswordApplication = new OneTimePasswordApplication(generatorMock.Object, repositoryMock.Object, communicatorMock.Object);
+            var oneTimePasswordApplication = new OneTimePasswordApplication(configurationMock.Object, generatorMock.Object, repositoryMock.Object, communicatorMock.Object);
 
             await oneTimePasswordApplication.CreateOneTimePasswordForUser(oneTimePasswordGenerated.UserId);
 
             generatorMock.Verify(mock => mock.GenerateForUser(oneTimePasswordGenerated.UserId, It.IsAny<DateTime>()), Times.Once());
             repositoryMock.Verify(mock => mock.Save(It.Is<OneTimePassword>(x => x.UserId == userId &&
-                                                    string.Equals(x.Value, oneTimePasswordGenerated.Value))), 
+                                                    string.Equals(x.Value, oneTimePasswordGenerated.Value))),
                                                    Times.Once());
             communicatorMock.Verify(mock => mock.Send(It.IsAny<OneTimePassword>()), Times.Once());
         }

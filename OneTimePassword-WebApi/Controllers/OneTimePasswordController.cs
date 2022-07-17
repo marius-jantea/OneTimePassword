@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OneTimePasswordBusinessLogic;
+using OneTimePasswordBusinessLogic.DefaultImplementations;
+using OneTimePasswordBusinessLogic.Interfaces;
 using OneTimePasswordBusinessLogic.Models;
 
 namespace OneTimePassword_WebApi.Controllers
@@ -9,10 +11,9 @@ namespace OneTimePassword_WebApi.Controllers
     public class OneTimePasswordController : ControllerBase
     {
         private readonly OneTimePasswordApplication oneTimePasswordApplication;
-        public OneTimePasswordController()
+        public OneTimePasswordController(IOneTimePasswordApplicationFactory applicationFactory)
         {
-            var implementation = new AllInOneImplementation();
-            oneTimePasswordApplication = new OneTimePasswordApplication(implementation, implementation, implementation);
+            oneTimePasswordApplication = applicationFactory.Create();
         }
 
         [HttpGet("GetValidPassword")]

@@ -1,20 +1,11 @@
 ﻿using OneTimePasswordBusinessLogic.Interfaces;
 using OneTimePasswordBusinessLogic.Models;
 
-namespace OneTimePasswordBusinessLogic
+namespace OneTimePasswordBusinessLogic.DefaultImplementations
 {
-    public class AllInOneImplementation : IOneTimePasswordGenerator, IOneTimePasswordCommunicator, IOneTimePasswordRepository
+    internal class OneTimePasswordRepository : IOneTimePasswordRepository
     {
         private static readonly Dictionary<string, OneTimePassword> passwords = new Dictionary<string, OneTimePassword>();
-
-        public Task<OneTimePassword> GenerateForUser(string userId, DateTime expirationDate)
-        {
-            Random random = new Random();
-            var randomNumber = random.Next(0, 1000000);
-
-            var newPassword = new OneTimePassword() { UserId = userId, ExpirationDate = expirationDate, Value = randomNumber.ToString("000000") };
-            return Task.FromResult(newPassword);
-        }
 
         public Task<OneTimePassword> GetValidPasswordForUserId(string userId)
         {
@@ -34,9 +25,5 @@ namespace OneTimePasswordBusinessLogic
             return Task.CompletedTask;
         }
 
-        public Task Send(OneTimePassword oneTimePassword)
-        {
-            return Task.CompletedTask;
-        }
     }
 }
